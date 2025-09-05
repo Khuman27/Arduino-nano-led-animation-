@@ -1,0 +1,245 @@
+// Arduino Nano RGB LED Strip Effects (42 Effects)
+// Pins (PWM capable pins only)
+int redPin = 3;
+int greenPin = 5;
+int bluePin = 6;
+
+unsigned long previousMillis = 0;
+int effect = 0;
+const int numEffects = 42;u
+
+// 7 fixed colors (RGB)
+int colors[7][3] = {
+  {255,0,0},    // Red
+  {0,255,0},    // Green
+  {0,0,255},    // Blue
+  {255,255,0},  // Yellow
+  {0,255,255},  // Cyan
+  {255,0,255},  // Magenta
+  {255,255,255} // White
+};
+
+// -------- Function Prototypes --------
+void runEffect(int e);
+void solidColor(int c[3]);
+void blinkColor(int c[3], int speed);
+void fadeColor(int c[3], int speed);
+void fadeRandom(int speed);
+void fadeRainbow(int speed);
+void strobe(int c[3], int speed);
+void pulseColor(int c[3], int speed);
+void pulseRandom(int speed);
+void rainbowEffect();
+void colorCycle(int speed);
+void pulseAllColors(int speed);
+void theaterChase(int c[3], int speed);
+void theaterChaseRainbow(int speed);
+void runningLights(int c[3], int speed);
+void breathingRainbow(int speed);
+void meteorRain(int speed);
+void fireSimulation();
+void sparkle(int speed);
+void glitter(int speed);
+void blinkRandom(int speed);
+
+// ---------------- Core Setup ----------------
+void setup() {
+  pinMode(redPin, OUTPUT);
+  pinMode(greenPin, OUTPUT);
+  pinMode(bluePin, OUTPUT);
+}
+
+// Set RGB color
+void setColor(int r, int g, int b) {
+  analogWrite(redPin, r);
+  analogWrite(greenPin, g);
+  analogWrite(bluePin, b);
+}
+
+void loop() {
+  unsigned long currentMillis = millis();
+
+  // Change effect every 3 sec
+  if (currentMillis - previousMillis >= 3000) {
+    previousMillis = currentMillis;
+    effect = (effect + 1) % numEffects;
+  }
+
+  runEffect(effect);
+}
+
+// ---------------- Effect Manager ----------------
+void runEffect(int e) {
+  switch(e) {
+    // Solid Colors (7)
+    case 0: solidColor(colors[0]); break;
+    case 1: solidColor(colors[1]); break;
+    case 2: solidColor(colors[2]); break;
+    case 3: solidColor(colors[3]); break;
+    case 4: solidColor(colors[4]); break;
+    case 5: solidColor(colors[5]); break;
+    case 6: solidColor(colors[6]); break;
+
+    // Blink (5)
+    case 7: blinkColor(colors[0],200); break;
+    case 8: blinkColor(colors[1],200); break;
+    case 9: blinkColor(colors[2],200); break;
+    case 10: blinkColor(colors[6],200); break;
+    case 11: blinkRandom(200); break;
+
+    // Fade (6)
+    case 12: fadeColor(colors[0],20); break;
+    case 13: fadeColor(colors[1],20); break;
+    case 14: fadeColor(colors[2],20); break;
+    case 15: fadeColor(colors[6],20); break;
+    case 16: fadeRandom(15); break;
+    case 17: fadeRainbow(8); break;
+
+    // Strobe (4)
+    case 18: strobe(colors[0],60); break;
+    case 19: strobe(colors[1],60); break;
+    case 20: strobe(colors[2],60); break;
+    case 21: strobe(colors[6],60); break;
+
+    // Pulse (5)
+    case 22: pulseColor(colors[0],15); break;
+    case 23: pulseColor(colors[1],15); break;
+    case 24: pulseColor(colors[2],15); break;
+    case 25: pulseColor(colors[6],15); break;
+    case 26: pulseRandom(15); break;
+
+    // Dynamic (16)
+    case 27: rainbowEffect(); break;
+    case 28: colorCycle(400); break;
+    case 29: pulseAllColors(15); break;
+    case 30: theaterChase(colors[0],120); break;
+    case 31: theaterChase(colors[1],120); break;
+    case 32: theaterChase(colors[2],120); break;
+    case 33: theaterChaseRainbow(120); break;
+    case 34: runningLights(colors[0],50); break;
+    case 35: runningLights(colors[1],50); break;
+    case 36: runningLights(colors[2],50); break;
+    case 37: breathingRainbow(10); break;
+    case 38: meteorRain(50); break;
+    case 39: fireSimulation(); break;
+    case 40: sparkle(120); break;
+    case 41: glitter(120); break;
+  }
+}
+
+// ---------------- Effect Functions ----------------
+void solidColor(int c[3]) {
+  setColor(c[0], c[1], c[2]);
+}
+
+void blinkColor(int c[3], int speed) {
+  if ((millis()/speed) % 2 == 0) setColor(c[0], c[1], c[2]);
+  else setColor(0,0,0);
+}
+
+void fadeColor(int c[3], int speed) {
+  int brightness = (millis()/speed) % 510;
+  if (brightness > 255) brightness = 510 - brightness;
+  setColor((c[0]*brightness)/255, (c[1]*brightness)/255, (c[2]*brightness)/255);
+}
+
+void fadeRandom(int speed) {
+  static int r=255,g=0,b=0;
+  static unsigned long lastChange=0;
+  if(millis()-lastChange>2000){ r=random(256); g=random(256); b=random(256); lastChange=millis();}
+  int brightness = (millis()/speed) % 510;
+  if (brightness > 255) brightness = 510 - brightness;
+  setColor((r*brightness)/255,(g*brightness)/255,(b*brightness)/255);
+}
+
+void fadeRainbow(int speed) {
+  int r = (sin(millis()*0.002)*127)+128;
+  int g = (sin(millis()*0.002+2)*127)+128;
+  int b = (sin(millis()*0.002+4)*127)+128;
+  int brightness = (millis()/speed) % 255;
+  setColor((r*brightness)/255,(g*brightness)/255,(b*brightness)/255);
+}
+
+void strobe(int c[3], int speed) {
+  if ((millis()/speed) % 2 == 0) setColor(c[0], c[1], c[2]);
+  else setColor(0,0,0);
+}
+
+void pulseColor(int c[3], int speed) {
+  int brightness = (sin(millis()/float(speed)*0.05)*127)+128;
+  setColor((c[0]*brightness)/255, (c[1]*brightness)/255, (c[2]*brightness)/255);
+}
+
+void pulseRandom(int speed) {
+  static int r=random(256), g=random(256), b=random(256);
+  int brightness = (sin(millis()/float(speed)*0.05)*127)+128;
+  setColor((r*brightness)/255,(g*brightness)/255,(b*brightness)/255);
+}
+
+void rainbowEffect() {
+  int r = (sin(millis()*0.002)*127)+128;
+  int g = (sin(millis()*0.002+2)*127)+128;
+  int b = (sin(millis()*0.002+4)*127)+128;
+  setColor(r,g,b);
+}
+
+void colorCycle(int speed) {
+  int index = (millis()/speed) % 7;
+  setColor(colors[index][0], colors[index][1], colors[index][2]);
+}
+
+void pulseAllColors(int speed) {
+  int index = (millis()/2000) % 7;
+  pulseColor(colors[index],speed);
+}
+
+void theaterChase(int c[3], int speed) {
+  if ((millis()/speed) % 2 == 0) setColor(c[0],c[1],c[2]);
+  else setColor(0,0,0);
+}
+
+void theaterChaseRainbow(int speed) {
+  int phase = (millis()/speed) % 3;
+  if (phase == 0) rainbowEffect();
+  else setColor(0,0,0);
+}
+
+void runningLights(int c[3], int speed) {
+  int brightness = (sin(millis()/speed)*127)+128;
+  setColor((c[0]*brightness)/255,(c[1]*brightness)/255,(c[2]*brightness)/255);
+}
+
+void breathingRainbow(int speed) {
+  int r = (sin(millis()*0.002)*127)+128;
+  int g = (sin(millis()*0.002+2)*127)+128;
+  int b = (sin(millis()*0.002+4)*127)+128;
+  int brightness = (sin(millis()/float(speed)*0.05)*127)+128;
+  setColor((r*brightness)/255,(g*brightness)/255,(b*brightness)/255);
+}
+
+void meteorRain(int speed) {
+  int brightness = (sin(millis()/float(speed)*0.1)*127)+128;
+  setColor(brightness, brightness/2, 0); // orange trail
+}
+
+void fireSimulation() {
+  int r = random(180,255);
+  int g = random(50,150);
+  int b = 0;
+  setColor(r,g,b);
+}
+
+void sparkle(int speed) {
+  if ((millis()/speed) % 2 == 0) setColor(255,255,255);
+  else setColor(random(256),random(256),random(256));
+}
+
+void glitter(int speed) {
+  if ((millis()/speed) % 5 == 0) setColor(255,255,255);
+  else rainbowEffect();
+}
+
+void blinkRandom(int speed) {
+  if ((millis()/speed) % 2 == 0) setColor(random(256),random(256),random(256));
+  else setColor(0,0,0);
+}
